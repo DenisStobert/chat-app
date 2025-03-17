@@ -53,8 +53,9 @@ docker-compose up --build
 Скачайте и установите **Postman** с официального сайта.
 
 
-### 1. Регистрация пользователя
+### 1. Регистрация двух пользователей
 1. Открыть **Postman**.
+**User1**
 2. Выбрать **POST**..
 3. Ввести URL:
 ```bash
@@ -71,7 +72,25 @@ http://localhost:8000/register
 ```
 6. Нажать **Send**.
 
+**User2**
+2. Выбрать **POST**..
+3. Ввести URL:
+```bash
+http://localhost:8000/register
+```
+4. Перейти во вкладку **Body →** выбрать **raw →** выбрать **JSON**.
+5. Вставить:
+```json
+{
+    "name": "User2",
+    "email": "user2@example.com",
+    "password": "password123"
+}
+```
+6. Нажать **Send**.
+
 ### 2. Авторизация (получение JWT токена)
+**User1 (получение токена)**
 1. Выбрать **POST**.
 2. Ввести URL:
 ```bash
@@ -89,16 +108,34 @@ http://localhost:8000/token
     "token_type": "bearer"
 }
 ```
+**User2 (получение токена)**
+1. Выбрать **POST**.
+2. Ввести URL:
+```bash
+http://localhost:8000/token
+```
+3. Перейти во вкладку **Body →** выбрать **x-www-form-urlencoded**.
+4. Добавить параметры:
+    - username: user2@example.com
+    - password: password123
+5. Нажать **Send**.
+**Ответ**:
+```json
+{
+    "access_token": "your_jwt_token",
+    "token_type": "bearer"
+}
+```
 Скопируйте your_jwt_token, он понадобится для всех следующих запросов.
 
-### 3. Создание чата
+### 3. Создание чата (от User1)
 1. Выбрать **POST**..
 2. Ввести URL:
 ```bash
 http://localhost:8000/chats
 ```
 3. Перейти во вкладку **Headers** и добавить:
- -[] Authorization: Bearer your_jwt_token
+ -[] Authorization: Bearer user1_jwt_token
 4. Перейти во вкладку **Body →** выбрать **raw →** выбрать **JSON**.
 5. Вставить:
 ```json
@@ -118,13 +155,14 @@ http://localhost:8000/chats
 ```
 
 ### 4. Добавление пользователя в чат
+**Добавление User1 в чат**
 1. Выбрать **POST**..
 2. Ввести URL:
 ```bash
 http://localhost:8000/chats/1/members?user_id=1
 ```
 3. В **Headers** добавить:
- -[] Authorization: Bearer your_jwt_token
+ -[] Authorization: Bearer user1_jwt_token
 4. Нажать **Send**.
 Ответ:
 ```json
@@ -132,15 +170,49 @@ http://localhost:8000/chats/1/members?user_id=1
     "message": "Пользователь 1 добавлен в чат 1"
 }
 ```
+**Добавление User2 в чат**
+1. Выбрать **POST**..
+2. Ввести URL:
+```bash
+http://localhost:8000/chats/1/members?user_id=2
+```
+3. В **Headers** добавить:
+ -[] Authorization: Bearer user1_jwt_token
+4. Нажать **Send**.
+Ответ:
+```json
+{
+    "message": "Пользователь 2 добавлен в чат 1"
+}
+```
+### 5. Проверка списка участников
+1. Выбрать **GET**..
+2. Ввести URL:
+```bash
+http://localhost:8000/chats/1/members
+```
+3. В **Headers** добавить:
+ -[] Authorization: Bearer user1_jwt_token
+4. Нажать **Send**.
+Ответ:
+```json
+{
+    "chat_id": 1,
+    "members": [
+        {"id": 1, "name": "User1"},
+        {"id": 2, "name": "User2"}
+    ]
+}
+```
 
-### 5. Получение истории сообщений
+### 6. Получение истории сообщений
 1. Выбрать **GET**..
 2. Ввести URL:
 ```bash
 http://localhost:8000/history/1
 ```
 3. В **Headers** добавить:
- -[] Authorization: Bearer your_jwt_token
+ -[] Authorization: Bearer user1_jwt_token
 4. Нажать **Send**.
 Ответ:
 ```json
@@ -185,7 +257,7 @@ http://localhost:8000/message/read/1
 Ответ:
 ```json
 {
-    "message": "Сообщение отмечено как прочитанное"
+    "message": "Сообщение 1 полностью прочитано!"
 }
 ```
 В WebSocket подключении отправитель получит сообщение "Ваше сообщение 1 прочитано!".
