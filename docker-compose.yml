@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  fastapi_app:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@db:5432/new_chat_db
+    networks:
+      - app_network
+
+  db:
+    image: postgres:15
+    container_name: chat_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: new_chat_db
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+networks:
+  app_network:
+
+volumes:
+  postgres_data:
